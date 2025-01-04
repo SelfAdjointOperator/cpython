@@ -311,6 +311,19 @@ concurrent.futures
   supplying a *mp_context* to :class:`concurrent.futures.ProcessPoolExecutor`.
   (Contributed by Gregory P.  Smith in :gh:`84559`.)
 
+
+contextlib
+----------
+
+* :class:`!contextlib.chdir` has been relocated to :class:`shutil.chdir_context`,
+  where it better belongs since it non-trivially alters a process's execution
+  environment. :class:`!contextlib.chdir` is still maintained as a supported
+  import, however it is considered deprecated and it is expected to be
+  removed in a future version of Python. This removal will only happen after
+  Python 3.13, the last version of Python without :class:`~shutil.chdir_context`,
+  reaches its end of life in 2029.
+
+
 ctypes
 ------
 
@@ -594,6 +607,10 @@ shutil
 * Add a new context manager :class:`~shutil.umask_context`, within which a
   process's umask is temporarily changed
   (Contributed by Jay Berry in :gh:`128433`.)
+
+* Gain context manager :class:`~shutil.chdir_context`, formerly located in
+  :mod:`contextlib` as :class:`!chdir`.
+  (Contributed by Jay Berry in :gh:`128499`.)
 
 
 ssl

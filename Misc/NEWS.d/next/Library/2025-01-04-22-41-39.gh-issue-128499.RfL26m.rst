@@ -1,0 +1,2 @@
+Move :class:`!contextlib.chdir` to :class:`shutil.chdir_context`, which is a
+better home for it, next to the newly added :class:`shutil.umask_context`.
