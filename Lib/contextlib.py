@@ -802,9 +802,8 @@ def __getattr__(name):
     global chdir
 
     if name == 'chdir':
-        import warnings
-        warnings.warn('contextlib.chdir has been relocated to shutil.chdir_context',
-                      DeprecationWarning, stacklevel=2)
+        # This will be deprecated once 3.13 is no longer supported,
+        # as all versions >=3.14 provide shutil.chdir_context
         from shutil import chdir_context as chdir
         return chdir
 
