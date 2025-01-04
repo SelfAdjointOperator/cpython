@@ -892,7 +892,7 @@ High-level :term:`context managers <context manager>` for changing a process's e
    temporarily relinquished. Unless explicitly desired, you should not yield
    within these context managers.
 
-.. class:: chdir_of(path)
+.. class:: chdir_context(path)
 
    This is a simple wrapper around :func:`os.chdir`. It changes the current
    working directory upon entering and restores the old one on exit.

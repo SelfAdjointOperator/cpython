@@ -1317,12 +1317,11 @@ class TestSuppress(ExceptionIsLikeMixin, unittest.TestCase):
 class TestChdir(unittest.TestCase):
     def test_backwards_compatibility(self):
         # for testing the deprecated contextlib.chdir compatibility function
-        # which redirects to shutil.chdir
+        # which redirects to shutil.chdir_context
 
-        chdir_ctx = chdir("/")
-        with chdir_ctx:
+        with chdir("/"):
             # we can enter and exit, thus we know contextlib.chdir
-            # returned an instance of shutil.chdir
+            # returned shutil.chdir_context
             pass
 
 

@@ -799,13 +799,13 @@ class nullcontext(AbstractContextManager, AbstractAsyncContextManager):
 
 
 def __getattr__(name):
+    global chdir
+
     if name == 'chdir':
-        global chdir
         import warnings
-        from shutil import chdir_of as _chdir
-        warnings.warn('contextlib.chdir has been relocated to shutil.chdir_of',
+        warnings.warn('contextlib.chdir has been relocated to shutil.chdir_context',
                       DeprecationWarning, stacklevel=2)
-        chdir = _chdir
+        from shutil import chdir_context as chdir
         return chdir
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

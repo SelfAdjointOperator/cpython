@@ -80,7 +80,7 @@ def subdir(working_dir, *, clean_ok=False):
 
             working_dir.mkdir(parents=True, exist_ok=True)
 
-            with shutil.chdir_of(working_dir):
+            with shutil.chdir_context(working_dir):
                 return func(context, working_dir)
 
         return wrapper
