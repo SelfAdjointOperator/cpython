@@ -324,6 +324,38 @@ Functions and classes provided:
       ``suppress`` now supports suppressing exceptions raised as
       part of a :exc:`BaseExceptionGroup`.
 
+
+.. class:: ModificationContext(value)
+
+   An :term:`abstract base class` that specializes the functionality of
+   :class:`AbstractContextManager`, for context managers designed to change
+   the value of a state or attribute on entry, and revert it on exit.
+
+   Classes that inherit from :class:`ModificationContext`
+   must implement the following methods:
+
+   * ``_apply()``: Set the state to `value`, and return the old value
+     so that it can be stored for restoration on exit.
+   * ``_revert(previous_value)``: Restore the state to ``previous_value``,
+     the stored value that was returned from ``_apply()``.
+
+    :class:`ModificationContext` is designed to be a base class for many
+    :ref:`reentrant <reentrant-cms>` context managers. Each time
+    one enters the context, ``__enter__`` calls ``_apply()``, and stores the
+    returned value in a list, used as a stack. Each time one leaves the context
+    ``__exit__`` pops a ``previous_value`` from the stack and calls
+    ``_revert(previous_value)``.
+
+   .. attribute:: applied_value
+
+      Property returning the value that the context manager applies when
+      active, i.e. what ``value`` was used to construct the context.
+
+   See :func:`redirect_stdout` and :func:`chdir` for concrete examples.
+
+   .. versionadded:: 3.14
+
+
 .. function:: redirect_stdout(new_target)
 
    Context manager for temporarily redirecting :data:`sys.stdout` to
