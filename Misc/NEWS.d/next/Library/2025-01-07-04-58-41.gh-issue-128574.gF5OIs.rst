@@ -1,0 +1,4 @@
+Add a new ABC :class:`~contextlib.ModificationContext` that specializes the
+functionality of :class:`~contextlib.AbstractContextManager` for context
+managers designed to change the value of a state or attribute on entry, and
+revert it on exit.

@@ -324,10 +324,44 @@ Functions and classes provided:
       ``suppress`` now supports suppressing exceptions raised as
       part of a :exc:`BaseExceptionGroup`.
 
+
+.. _modification-cms:
+
+.. class:: ModificationContext(value)
+
+   An :term:`abstract base class` that specializes the functionality of
+   :class:`AbstractContextManager`, for context managers designed to change
+   the value of a state or attribute on entry, and revert it on exit.
+
+   Classes that inherit from :class:`ModificationContext`
+   must implement the following methods:
+
+   * ``_apply()``: Set the state to `value`, and return the old value
+     so that it can be stored for restoration on exit.
+   * ``_revert(previous_value)``: Restore the state to ``previous_value``,
+     the stored value that was returned from ``_apply()``.
+
+    :class:`ModificationContext` is designed to be a base class for many
+    :ref:`reentrant <reentrant-cms>` context managers. Each time
+    one enters the context, ``__enter__`` calls ``_apply()``, and stores the
+    returned value in a list, used as a stack. Each time one leaves the context
+    ``__exit__`` pops a ``previous_value`` from the stack and calls
+    ``_revert(previous_value)``.
+
+   .. attribute:: applied_value
+
+      Property returning the value that the context manager applies when
+      active, i.e. what ``value`` was used to construct the context.
+
+   See :func:`redirect_stdout` and :func:`chdir` for concrete examples.
+
+   .. versionadded:: 3.14
+
+
 .. function:: redirect_stdout(new_target)
 
-   Context manager for temporarily redirecting :data:`sys.stdout` to
-   another file or file-like object.
+   A :ref:`modification context manager <modification-cms>` for temporarily
+   redirecting :data:`sys.stdout` to another file or file-like object.
 
    This tool adds flexibility to existing functions or classes whose output
    is hardwired to stdout.
@@ -376,12 +410,13 @@ Functions and classes provided:
 
 .. function:: chdir(path)
 
-   Non parallel-safe context manager to change the current working directory.
-   As this changes a global state, the working directory, it is not suitable
-   for use in most threaded or async contexts. It is also not suitable for most
-   non-linear code execution, like generators, where the program execution is
-   temporarily relinquished -- unless explicitly desired, you should not yield
-   when this context manager is active.
+   Non parallel-safe :ref:`modification context manager <modification-cms>` to
+   change the current working directory. As this changes a global state, the
+   working directory, it is not suitable for use in most threaded or async
+   contexts. It is also not suitable for most non-linear code execution, like
+   generators, where the program execution is temporarily relinquished --
+   unless explicitly desired, you should not yield when this context manager
+   is active.
 
    This is a simple wrapper around :func:`~os.chdir`, it changes the current
    working directory upon entering and restores the old one on exit.

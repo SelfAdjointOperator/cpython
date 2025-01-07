@@ -102,6 +102,52 @@ class AsyncContextDecorator(object):
         return inner
 
 
+class ModificationContext(AbstractContextManager):
+    # XXX-TODO should this support the contextmanager decorator?
+    """
+    An abstract base class for context managers designed to change a state
+    or attribute to `value` on entry and revert it on exit.
+
+    Designed to be reentry safe.
+    """
+
+    def __init__(self, value):
+        self._applied_value = value
+        self._values = []
+
+    @property
+    def applied_value(self):
+        """
+        Property to get the value that the context manager applies when active
+        """
+        return self._applied_value
+
+    def __repr__(self):
+        return f"{type(self).__qualname__}({self._applied_value!r})"
+
+    def __enter__(self):
+        self._values.append(self._apply())
+        return self._applied_value
+
+    def __exit__(self, *exc_info):
+        self._revert(self._values.pop())
+
+    def _apply(self):
+        """
+        Context managers inheriting this class should set the state
+        to `_applied_value` in this function, and must return the old value
+        that will be restored on exit.
+        """
+        raise NotImplementedError("must be implemented in subclass")
+
+    def _revert(self, previous_value):
+        """
+        Context managers inheriting this class should restore the state
+        to `previous_value` in this function.
+        """
+        raise NotImplementedError("must be implemented in subclass")
+
+
 class _GeneratorContextManagerBase:
     """Shared functionality for @contextmanager and @asynccontextmanager."""
 
@@ -390,22 +436,17 @@ class aclosing(AbstractAsyncContextManager):
         await self.thing.aclose()
 
 
-class _RedirectStream(AbstractContextManager):
+class _RedirectStream(ModificationContext):
 
     _stream = None
 
-    def __init__(self, new_target):
-        self._new_target = new_target
-        # We use a list of old targets to make this CM re-entrant
-        self._old_targets = []
+    def _apply(self):
+        old_stream = getattr(sys, self._stream)
+        setattr(sys, self._stream, self._applied_value)
+        return old_stream
 
-    def __enter__(self):
-        self._old_targets.append(getattr(sys, self._stream))
-        setattr(sys, self._stream, self._new_target)
-        return self._new_target
-
-    def __exit__(self, exctype, excinst, exctb):
-        setattr(sys, self._stream, self._old_targets.pop())
+    def _revert(self, previous_value):
+        setattr(sys, self._stream, previous_value)
 
 
 class redirect_stdout(_RedirectStream):
@@ -799,16 +840,19 @@ class nullcontext(AbstractContextManager, AbstractAsyncContextManager):
         pass
 
 
-class chdir(AbstractContextManager):
+class chdir(ModificationContext):
     """Non thread-safe context manager to change the current working directory."""
 
-    def __init__(self, path):
-        self.path = path
-        self._old_cwd = []
+    @property
+    def path(self):
+        # for compatibility with chdir before it inherited
+        # from ModificationContext
+        return self._applied_value
 
-    def __enter__(self):
-        self._old_cwd.append(os.getcwd())
-        os.chdir(self.path)
+    def _apply(self):
+        old_cwd = os.getcwd()
+        os.chdir(self._applied_value)
+        return old_cwd
 
-    def __exit__(self, *excinfo):
-        os.chdir(self._old_cwd.pop())
+    def _revert(self, previous_value):
+        os.chdir(previous_value)
