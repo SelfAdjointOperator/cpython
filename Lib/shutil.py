@@ -10,7 +10,7 @@ import stat
 import fnmatch
 import collections
 import errno
-from contextlib import AbstractContextManager
+from contextlib import ModificationContext
 
 try:
     import zlib
@@ -1583,18 +1583,14 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
     return None
 
 
-class umask_context(AbstractContextManager):
+class umask_context(ModificationContext):
     """Non thread-safe context manager to change the process's umask."""
 
-    def __init__(self, mask):
-        self.mask = mask
-        self._old_mask = []
+    def _apply(self):
+        return os.umask(self._applied_value)
 
-    def __enter__(self):
-        self._old_mask.append(os.umask(self.mask))
-
-    def __exit__(self, *excinfo):
-        os.umask(self._old_mask.pop())
+    def _revert(self, previous_value):
+        os.umask(previous_value)
 
 
 def __getattr__(name):
