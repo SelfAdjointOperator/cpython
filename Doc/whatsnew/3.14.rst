@@ -311,6 +311,18 @@ concurrent.futures
   supplying a *mp_context* to :class:`concurrent.futures.ProcessPoolExecutor`.
   (Contributed by Gregory P.  Smith in :gh:`84559`.)
 
+
+contextlib
+----------
+
+* Add a new ABC :class:`~contextlib.ModificationContext` that
+  specializes the functionality of :class:`~contextlib.AbstractContextManager`,
+  for context managers designed to change the value of a state or attribute on
+  entry, and revert it on exit. :func:`~contextlib.redirect_stdout` and
+  :func:`~contextlib.chdir` are examples of context managers that already used
+  the style now abstracted into ``ModificationContext``.
+
+
 ctypes
 ------
 
